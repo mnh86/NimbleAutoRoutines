@@ -26,8 +26,11 @@ void pressHandler (BfButton *btn, BfButton::press_pattern_t pattern) {
 void setup()
 {
   initNimbleSDK();
+  
+  Serial.setDebugOutput(true);
   while (!Serial);
-  Serial.println();
+  delay(3000);
+  Serial.println("\nNimbleEdgeRoutine starting...");
 
   btn.onPress(pressHandler)
      .onDoublePress(pressHandler) // default timeout
@@ -35,7 +38,8 @@ void setup()
 }
 
 /**
- * Put your main code here, to run repeatedly. Do NOT use delays. 
+ * Put your main code here, to run repeatedly. 
+ * Do NOT use delays. nimbleCon uses non-blocking mode.
  */
 void loop()
 {
