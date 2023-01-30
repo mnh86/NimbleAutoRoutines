@@ -1,18 +1,44 @@
-#include <Arduino.h>
+// Use "ESP32 Dev Module" as board
+#include <Arduino.h> 
+#include <BfButton.h>
 #include "nimbleCon.h"
 
-// Use "ESP32 Dev Module" as board
+BfButton btn(BfButton::STANDALONE_DIGITAL, ENC_BUTT, true, LOW);
 
-void setup()
-{
-  // put your setup code here, to run once:
-  initNimbleSDK();
+void pressHandler (BfButton *btn, BfButton::press_pattern_t pattern) {
+  switch (pattern) {
+    case BfButton::SINGLE_PRESS:
+      Serial.printf("Button %d pressed.\n", btn->getID());
+      Serial.printf("Pendant dial level: %d\n", encoder.getCount());
+      break;
+    case BfButton::DOUBLE_PRESS:
+      Serial.printf("Button %d double pressed.\n", btn->getID());
+      break;
+    case BfButton::LONG_PRESS:
+      Serial.printf("Button %d long pressed.\n", btn->getID());
+      break;
+  }
 }
 
+/**
+ * Put your setup code here, to run once
+ */
+void setup()
+{
+  initNimbleSDK();
+  while (!Serial);
+  Serial.println();
+
+  btn.onPress(pressHandler)
+     .onDoublePress(pressHandler) // default timeout
+     .onPressFor(pressHandler, 2000); // custom timeout for 2 seconds
+}
+
+/**
+ * Put your main code here, to run repeatedly. Do NOT use delays. 
+ */
 void loop()
 {
-  // Put your main code here, to run repeatedly. Do NOT use delays.
-
   // Modify values to be sent to the actuator.
 
   // Check actuator and pendant serial ports for complete packets and update structs.
@@ -30,10 +56,10 @@ void loop()
 
   // This DEMO code pauses the actuator (in a very crude way) when the encoder button is pressed
   // (it will jump to whatever position the pendant is commanding at the moment the button is released)
+  btn.read();
   if (digitalRead(ENC_BUTT))
   {                                // Encoder button reads low when pressed.
     driveLEDs(encoder.getCount()); // Show LEDs as demo
-    // Serial.printf("Pendant dial level: %d\n", encoder.getCount());
   }
   else
   {
@@ -47,4 +73,7 @@ void loop()
 
   pendant.present ? ledcWrite(PEND_LED, 50) : ledcWrite(PEND_LED, 0); // Display pendant connection status on LED.
   actuator.present ? ledcWrite(ACT_LED, 50) : ledcWrite(ACT_LED, 0);  // Display actuator connection status on LED.
+  
+  //ledcWrite(BT_LED, 50);
+  //ledcWrite(WIFI_LED, 50);
 }
