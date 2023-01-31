@@ -143,8 +143,6 @@ void initNimbleSDK()
     timerAlarmWrite(timer, SEND_INTERVAL, true); // Configure timer threshold
     timerAlarmEnable(timer);                     // Enable timer
 
-    digitalWrite(ENC_LED_E, LOW); // Is this needed? Doesn't seem to do anything
-
     // Attach PWM to LED pins (pin, PWM channel)
     ledcAttachPin(4, ENC_LED_E);
     ledcAttachPin(5, ENC_LED_SE);
