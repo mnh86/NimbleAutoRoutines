@@ -32,14 +32,14 @@ HardwareSerial actSerial(2);
 #define SENSOR_ADC 33
 
 // Encoder LED PWM channels
-#define ENC_LED_1 0
-#define ENC_LED_2 1
-#define ENC_LED_3 2
-#define ENC_LED_4 3
-#define ENC_LED_5 4
-#define ENC_LED_6 5
-#define ENC_LED_7 6
-#define ENC_LED_8 7
+#define ENC_LED_E 0
+#define ENC_LED_SE 1
+#define ENC_LED_S 2
+#define ENC_LED_SW 3
+#define ENC_LED_W 4
+#define ENC_LED_NW 5
+#define ENC_LED_N 6
+#define ENC_LED_NE 7
 
 // Other LED PWM channels
 #define ACT_LED 8
@@ -130,7 +130,7 @@ void initNimbleSDK()
 
     ESP32Encoder::useInternalWeakPullResistors = UP;
     encoder.attachHalfQuad(ENC_A, ENC_B);
-    encoder.setCount(37);
+    encoder.setCount(0);
 
     // Setup serial ports
     Serial.begin(SERIAL_BAUD);                                   // open serial port for USB connection
@@ -143,31 +143,31 @@ void initNimbleSDK()
     timerAlarmWrite(timer, SEND_INTERVAL, true); // Configure timer threshold
     timerAlarmEnable(timer);                     // Enable timer
 
-    digitalWrite(ENC_LED_1, LOW);
+    digitalWrite(ENC_LED_E, LOW); // Is this needed? Doesn't seem to do anything
 
     // Attach PWM to LED pins (pin, PWM channel)
-    ledcAttachPin(4, ENC_LED_1);
-    ledcAttachPin(5, ENC_LED_2);
-    ledcAttachPin(12, ENC_LED_3);
-    ledcAttachPin(13, ENC_LED_4);
-    ledcAttachPin(21, ENC_LED_5);
-    ledcAttachPin(22, ENC_LED_6);
-    ledcAttachPin(23, ENC_LED_7);
-    ledcAttachPin(25, ENC_LED_8);
+    ledcAttachPin(4, ENC_LED_E);
+    ledcAttachPin(5, ENC_LED_SE);
+    ledcAttachPin(12, ENC_LED_S);
+    ledcAttachPin(13, ENC_LED_SW);
+    ledcAttachPin(21, ENC_LED_W);
+    ledcAttachPin(22, ENC_LED_NW);
+    ledcAttachPin(23, ENC_LED_N);
+    ledcAttachPin(25, ENC_LED_NE);
     ledcAttachPin(18, ACT_LED);
     ledcAttachPin(19, PEND_LED);
     ledcAttachPin(26, BT_LED);
     ledcAttachPin(27, WIFI_LED);
 
     // Configure PWM channels (PWM channel, PWM frequency, PWM counter bits)
-    ledcSetup(ENC_LED_1, 1000, 8);
-    ledcSetup(ENC_LED_2, 1000, 8);
-    ledcSetup(ENC_LED_3, 1000, 8);
-    ledcSetup(ENC_LED_4, 1000, 8);
-    ledcSetup(ENC_LED_5, 1000, 8);
-    ledcSetup(ENC_LED_6, 1000, 8);
-    ledcSetup(ENC_LED_7, 1000, 8);
-    ledcSetup(ENC_LED_8, 1000, 8);
+    ledcSetup(ENC_LED_E, 1000, 8);
+    ledcSetup(ENC_LED_SE, 1000, 8);
+    ledcSetup(ENC_LED_S, 1000, 8);
+    ledcSetup(ENC_LED_SW, 1000, 8);
+    ledcSetup(ENC_LED_W, 1000, 8);
+    ledcSetup(ENC_LED_NW, 1000, 8);
+    ledcSetup(ENC_LED_N, 1000, 8);
+    ledcSetup(ENC_LED_NE, 1000, 8);
     ledcSetup(ACT_LED, 1000, 8);
     ledcSetup(PEND_LED, 1000, 8);
     ledcSetup(BT_LED, 1000, 8);
@@ -178,14 +178,14 @@ void driveLEDs(byte LEDScale)
 {
     byte dimmer = 75; // No visible difference between values between 75 and 255.
 
-    LEDScale > 0 ? ledcWrite(ENC_LED_1, min(100, map(LEDScale, 0, 32, 0, dimmer))) : ledcWrite(ENC_LED_1, 0);
-    LEDScale > 32 ? ledcWrite(ENC_LED_2, min(100, map(LEDScale, 32, 64, 0, dimmer))) : ledcWrite(ENC_LED_2, 0);
-    LEDScale > 64 ? ledcWrite(ENC_LED_3, min(100, map(LEDScale, 64, 96, 0, dimmer))) : ledcWrite(ENC_LED_3, 0);
-    LEDScale > 96 ? ledcWrite(ENC_LED_4, min(100, map(LEDScale, 96, 128, 0, dimmer))) : ledcWrite(ENC_LED_4, 0);
-    LEDScale > 128 ? ledcWrite(ENC_LED_5, min(100, map(LEDScale, 128, 160, 0, dimmer))) : ledcWrite(ENC_LED_5, 0);
-    LEDScale > 160 ? ledcWrite(ENC_LED_6, min(100, map(LEDScale, 160, 192, 0, dimmer))) : ledcWrite(ENC_LED_6, 0);
-    LEDScale > 192 ? ledcWrite(ENC_LED_7, min(100, map(LEDScale, 192, 224, 0, dimmer))) : ledcWrite(ENC_LED_7, 0);
-    LEDScale > 224 ? ledcWrite(ENC_LED_8, min(100, map(LEDScale, 224, 255, 0, dimmer))) : ledcWrite(ENC_LED_8, 0);
+    LEDScale > 0 ? ledcWrite(ENC_LED_N, min(100, map(LEDScale, 0, 32, 0, dimmer))) : ledcWrite(ENC_LED_N, 0);
+    LEDScale > 32 ? ledcWrite(ENC_LED_NE, min(100, map(LEDScale, 32, 64, 0, dimmer))) : ledcWrite(ENC_LED_NE, 0);
+    LEDScale > 64 ? ledcWrite(ENC_LED_E, min(100, map(LEDScale, 64, 96, 0, dimmer))) : ledcWrite(ENC_LED_E, 0);
+    LEDScale > 96 ? ledcWrite(ENC_LED_SE, min(100, map(LEDScale, 96, 128, 0, dimmer))) : ledcWrite(ENC_LED_SE, 0);
+    LEDScale > 128 ? ledcWrite(ENC_LED_S, min(100, map(LEDScale, 128, 160, 0, dimmer))) : ledcWrite(ENC_LED_S, 0);
+    LEDScale > 160 ? ledcWrite(ENC_LED_SW, min(100, map(LEDScale, 160, 192, 0, dimmer))) : ledcWrite(ENC_LED_SW, 0);
+    LEDScale > 192 ? ledcWrite(ENC_LED_W, min(100, map(LEDScale, 192, 224, 0, dimmer))) : ledcWrite(ENC_LED_W, 0);
+    LEDScale > 224 ? ledcWrite(ENC_LED_NW, min(100, map(LEDScale, 224, 255, 0, dimmer))) : ledcWrite(ENC_LED_NW, 0);
 }
 
 void sendToAct()
@@ -237,6 +237,7 @@ bool readFromPend()
     static long lastTime = 0, lastPacket = 0;
     static byte incomingPacket[7];
     int checkWord, checkSum;
+    bool updated = 0;
 
     lastPacket = millis() - lastTime;
 
@@ -288,12 +289,11 @@ bool readFromPend()
                 pendant.airIn = (statusByte & 0x04) ? 1 : 0;
 
                 pendant.present = true;
-                return (1); // Return 1 since the struct was updated this call.
+                updated = 1; // Return 1 since the struct was updated this call.
             }
         }
-        return (0); // Return 0 since the struct was not updated this call.
     }
-    return (0);
+    return (updated);
 }
 
 bool readFromAct()
@@ -302,6 +302,7 @@ bool readFromAct()
     static long lastTime = 0, lastPacket = 0;
     static byte incomingPacket[7];
     int checkWord, checkSum;
+    bool updated = 0;
 
     lastPacket = millis() - lastTime;
 
@@ -356,10 +357,9 @@ bool readFromAct()
                 actuator.tempLimiting = (statusByte & 0x04) ? 1 : 0;
 
                 actuator.present = true;
-                return (1); // Return 1 since the struct was updated this call.
+                updated = 1; // Return 1 since the struct was updated this call.
             }
         }
-        return (0); // Return 0 since the struct was not updated this call.
     }
-    return (0);
+    return (updated);
 }

@@ -49,7 +49,7 @@ void loop()
   if (readFromPend())
   { // Read values from pendant. If the function returns true, the values were updated so update the pass-through values.
     // DEMO: Pass through data from pendant to actuator
-    actuator.positionCommand = pendant.positionCommand;
+    actuator.positionCommand = pendant.positionCommand; // this is the main property we will be adjusting
     actuator.forceCommand = pendant.forceCommand;
     actuator.airIn = pendant.airIn;
     actuator.airOut = pendant.airOut;
@@ -78,6 +78,8 @@ void loop()
   pendant.present ? ledcWrite(PEND_LED, 50) : ledcWrite(PEND_LED, 0); // Display pendant connection status on LED.
   actuator.present ? ledcWrite(ACT_LED, 50) : ledcWrite(ACT_LED, 0);  // Display actuator connection status on LED.
   
-  //ledcWrite(BT_LED, 50);
-  //ledcWrite(WIFI_LED, 50);
+  // ledcWrite(PEND_LED, 50);
+  // ledcWrite(ACT_LED, 50);
+  // ledcWrite(BT_LED, 50);
+  // ledcWrite(WIFI_LED, 50);
 }
