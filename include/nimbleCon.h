@@ -47,6 +47,8 @@ HardwareSerial actSerial(2);
 #define BT_LED 10
 #define WIFI_LED 11
 
+#define MAX_LED_DUTY 75 // No visible brightness difference with values between 75 and 255.
+
 // Timers for sending serial data to actuator and pendant
 #define SEND_INTERVAL 2000 // microseconds between packets sent.
 
@@ -100,6 +102,8 @@ struct Pendant
 struct Pendant pendant; // Declare pendant
 
 // Actuator Variables
+#define MAX_ACTUATOR_POS 1000
+
 struct Actuator
 {
     bool present;
@@ -176,14 +180,14 @@ void driveLEDs(byte LEDScale)
 {
     byte dimmer = 75; // No visible difference between values between 75 and 255.
 
-    LEDScale > 0 ? ledcWrite(ENC_LED_N, min(100, map(LEDScale, 0, 32, 0, dimmer))) : ledcWrite(ENC_LED_N, 0);
-    LEDScale > 32 ? ledcWrite(ENC_LED_NE, min(100, map(LEDScale, 32, 64, 0, dimmer))) : ledcWrite(ENC_LED_NE, 0);
-    LEDScale > 64 ? ledcWrite(ENC_LED_E, min(100, map(LEDScale, 64, 96, 0, dimmer))) : ledcWrite(ENC_LED_E, 0);
-    LEDScale > 96 ? ledcWrite(ENC_LED_SE, min(100, map(LEDScale, 96, 128, 0, dimmer))) : ledcWrite(ENC_LED_SE, 0);
-    LEDScale > 128 ? ledcWrite(ENC_LED_S, min(100, map(LEDScale, 128, 160, 0, dimmer))) : ledcWrite(ENC_LED_S, 0);
-    LEDScale > 160 ? ledcWrite(ENC_LED_SW, min(100, map(LEDScale, 160, 192, 0, dimmer))) : ledcWrite(ENC_LED_SW, 0);
-    LEDScale > 192 ? ledcWrite(ENC_LED_W, min(100, map(LEDScale, 192, 224, 0, dimmer))) : ledcWrite(ENC_LED_W, 0);
-    LEDScale > 224 ? ledcWrite(ENC_LED_NW, min(100, map(LEDScale, 224, 255, 0, dimmer))) : ledcWrite(ENC_LED_NW, 0);
+    LEDScale > 0 ? ledcWrite(ENC_LED_N, min(100, map(LEDScale, 0, 32, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_N, 0);
+    LEDScale > 32 ? ledcWrite(ENC_LED_NE, min(100, map(LEDScale, 32, 64, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_NE, 0);
+    LEDScale > 64 ? ledcWrite(ENC_LED_E, min(100, map(LEDScale, 64, 96, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_E, 0);
+    LEDScale > 96 ? ledcWrite(ENC_LED_SE, min(100, map(LEDScale, 96, 128, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_SE, 0);
+    LEDScale > 128 ? ledcWrite(ENC_LED_S, min(100, map(LEDScale, 128, 160, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_S, 0);
+    LEDScale > 160 ? ledcWrite(ENC_LED_SW, min(100, map(LEDScale, 160, 192, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_SW, 0);
+    LEDScale > 192 ? ledcWrite(ENC_LED_W, min(100, map(LEDScale, 192, 224, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_W, 0);
+    LEDScale > 224 ? ledcWrite(ENC_LED_NW, min(100, map(LEDScale, 224, 255, 0, MAX_LED_DUTY))) : ledcWrite(ENC_LED_NW, 0);
 }
 
 void sendToAct()

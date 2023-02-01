@@ -14,9 +14,6 @@ float ns_speed = 1.0;     // speed in hz of the primary wave
 uint16_t ns_texture = 0;  // magnitude of the secondary wave [0-1000]
 float ns_nature = 10;     // speed in hz of the secondary wave
 
-int wave1_degrees = 0;
-int wave2_degrees = 0;
-
 int frame_position = 0;
 int frame_force = 1023;
 
@@ -66,7 +63,7 @@ void setup()
   actuator.activated = true;
 
   printDelay.start(200); // start the printDelay in ms
-  ledCycleDelay.start(100);
+  ledCycleDelay.start(30);
 }
 
 void print_position() {
@@ -82,14 +79,15 @@ void cycle_leds() {
   
   byte ledState1 = 0;
   byte ledState2 = 0;
+  byte ledScale = map(abs(frame_position), 1, MAX_ACTUATOR_POS, 1, MAX_LED_DUTY);
 
   if (ns_mode) {
     if (frame_position > 0) {
-      ledState1 = 10;
+      ledState1 = ledScale;
       ledState2 = 0;
     } else {
       ledState1 = 0;
-      ledState2 = 10;
+      ledState2 = ledScale;
     }
   } 
 
@@ -119,22 +117,18 @@ void stepModeIdle() {
   }
 }
 
-void stepModeWave() {
-  int speed_millis = 1000 / ns_speed;
+int calcWavePosition(int speed, int max) {
+  int speed_millis = 1000 / speed;
   int mod_millis = millis() % speed_millis;
   float temp_pos = float(mod_millis) / speed_millis;
-  wave1_degrees = temp_pos * 360;
+  int wave_deg = temp_pos * 360;
+  return (sin(radians(wave_deg)) * max);
+}
 
-  speed_millis = 1000 / ns_nature;
-  mod_millis = millis() % speed_millis;
-  temp_pos = float(mod_millis) / speed_millis;
-  wave2_degrees = temp_pos * 360;
-
-  int wave1_max = ns_stroke - ns_texture;
-  int wave1_postition = sin(radians(wave1_degrees)) * wave1_max;
-  int wave2_postition = sin(radians(wave2_degrees)) * ns_texture;
-  
-  frame_position = wave1_postition + wave2_postition;
+void stepModeWave() {  
+  int wave1_pos = calcWavePosition(ns_speed, ns_stroke - ns_texture);
+  int wave2_pos = calcWavePosition(ns_nature, ns_texture);
+  frame_position = wave1_pos + wave2_pos;
 }
 
 /**
