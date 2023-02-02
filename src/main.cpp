@@ -13,11 +13,14 @@ millisDelay ledCycleDelay;
 
 void printState() {
     bufferedOut.printf("------------------\n");
-    if (runMode != RUN_MODE_IDLE)
-        bufferedOut.printf("    Pos %5d\n", framePosition);
-    bufferedOut.printf("  Speed %5f\n", nsSpeed);
-    bufferedOut.printf(" Stroke %5d\n", nsStroke);
-    bufferedOut.printf("Texture %5d\n", nsTexture);
+    if (runMode != RUN_MODE_IDLE) {
+    bufferedOut.printf(" Run Mode: %s\n", getRunModeName());
+    bufferedOut.printf("      Pos: %5d\n", framePosition);
+    }
+    bufferedOut.printf("Edit Mode: %s\n", getEditModeName());
+    bufferedOut.printf("    Speed: %5f\n", nsSpeed);
+    bufferedOut.printf("   Stroke: %5d\n", nsStroke);
+    bufferedOut.printf("  Texture: %5d\n", nsTexture);
     //bufferedOut.printf("Encoder %5d\n", encoder.getCount());
 }
 
@@ -29,13 +32,10 @@ void pressHandler(BfButton *btn, BfButton::press_pattern_t pattern)
     {
     case BfButton::SINGLE_PRESS: // Cycle through edit modes
         editMode++; if (editMode > EDIT_MODE_TEXTURE) editMode = EDIT_MODE_SPEED;
-
         bufferedOut.printf("Btn %d pressed\n", btn->getID());
-        printState();
         break;
     case BfButton::DOUBLE_PRESS: // Start and switch run modes
-        runMode++; if (runMode > RUN_MODE_RANDOM) runMode = RUN_MODE_EDGING;
-
+        runMode++; if (runMode > RUN_MODE_RANDOM) runMode = RUN_MODE_CONSTANT;
         bufferedOut.printf("Btn %d double pressed\n", btn->getID());
         break;
     case BfButton::LONG_PRESS: // Stop

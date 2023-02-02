@@ -2,16 +2,56 @@
 #include "nimbleConModule.h"
 
 #define RUN_MODE_IDLE 0
-#define RUN_MODE_EDGING 1
-#define RUN_MODE_RANDOM 2
+#define RUN_MODE_CONSTANT 1
+#define RUN_MODE_EDGING 2
+#define RUN_MODE_RANDOM 3
+
+uint8_t runMode = RUN_MODE_IDLE;
+
+char * getRunModeName() {
+    switch (runMode)
+    {
+    case RUN_MODE_IDLE:
+        return (char *)"Idle";
+        break;
+    case RUN_MODE_CONSTANT:
+        return (char *)"Constant";
+        break;
+    case RUN_MODE_EDGING:
+        return (char *)"Edging";
+        break;
+    case RUN_MODE_RANDOM:
+        return (char *)"Random";
+        break;
+    }
+    return (char *)"Unknown";
+}
 
 #define EDIT_MODE_SPEED 0
 #define EDIT_MODE_STROKE 1
 #define EDIT_MODE_TEXTURE 2
 
+uint8_t editMode = EDIT_MODE_SPEED; // 0 - speed, 1 - stroke, 2 - texture
+int64_t encoderRef;
+
+char * getEditModeName() {
+    switch (editMode)
+    {
+    case EDIT_MODE_SPEED:
+        return (char *)"Speed";
+        break;
+    case EDIT_MODE_STROKE:
+        return (char *)"Stroke";
+        break;
+    case EDIT_MODE_TEXTURE:
+        return (char *)"Texture";
+        break;
+    }
+    return (char *)"Unknown";
+}
+
 const int idleReturnSpeed = 3;
 
-uint8_t runMode = RUN_MODE_IDLE;  // 0 - idle, 1 - edging program, 2 - random
 uint16_t nsStroke = 100; // maximum magnitude of stroke (primary wave magnitude will be nsStroke - nsTexture) [0-1000]
 float nsSpeed = 0.1;     // speed in hz of the primary wave
 uint16_t nsTexture = 0;  // magnitude of the secondary wave [0-1000] (vibration intensity)
@@ -20,8 +60,6 @@ float nsNature = 10;     // speed in hz of the secondary wave (vibration speed)
 int framePosition = 0;
 int frameForce = IDLE_FORCE;
 
-uint8_t editMode = EDIT_MODE_SPEED; // 0 - speed, 1 - stroke, 2 - texture
-int64_t encoderRef;
 
 // Initialization fuction
 void initNimbleStrokerController()
@@ -59,11 +97,17 @@ int calcWavePosition(float speed, int max)
     return (sin(radians(wave_deg)) * max);
 }
 
-void stepModeEdging()
+void stepModeConstant()
 {
     int wave1_pos = calcWavePosition(nsSpeed, nsStroke - nsTexture);
     int wave2_pos = calcWavePosition(nsNature, nsTexture);
     framePosition = wave1_pos + wave2_pos;
+    frameForce = MAX_FORCE;
+}
+
+void stepModeEdging()
+{
+    framePosition = 0; // TODO
     frameForce = MAX_FORCE;
 }
 
@@ -151,6 +195,9 @@ void nsControllerLoop()
 
     switch (runMode)
     {
+    case RUN_MODE_CONSTANT:
+        stepModeConstant();
+        break;
     case RUN_MODE_EDGING:
         stepModeEdging();
         break;
