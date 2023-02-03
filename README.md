@@ -15,7 +15,7 @@ Three run modes are included:
 2. Clone this repo and open the project in VSCode
 3. Build and upload this program into the NimbleConModule
 4. Attach the NimbleConModule to the actuator (Label A)
-5. (Optional) Attached the Control Pendant (Label P)
+5. (Optional) Attach the Control Pendant (Label P)
    - Only useful for adjusting the Air In and Out functions
    - Other stroke/vibration controls from the Pendant are bypassed
 6. Double click the Encoder Dial to start/skip to the next routine:
