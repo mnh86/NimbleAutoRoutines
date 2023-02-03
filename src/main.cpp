@@ -13,11 +13,13 @@ millisDelay ledCycleDelay;
 
 void printState() {
     bufferedOut.printf("------------------\n");
-    if (runMode != RUN_MODE_IDLE) {
     bufferedOut.printf(" Run Mode: %s\n", getRunModeName());
+    if (runMode != RUN_MODE_IDLE) {
     bufferedOut.printf("      Pos: %5d\n", lastFramePos);
+    bufferedOut.printf("  MaxPosΔ: %5d\n", maxPositionDelta);
     bufferedOut.printf("    Force: %5d\n", frameForce);
     bufferedOut.printf("   AirOut: %5d\n", actuator.airOut);
+    maxPositionDelta = 0;
     }
     bufferedOut.printf("Edit Mode: %s\n", getEditModeName());
     bufferedOut.printf("    Speed: %0.3f\n", nsSpeed);
@@ -98,5 +100,5 @@ void loop()
     btn.read();
     nsControllerLoop();
     driveLEDs();
-    //logState();
+    logState();
 }

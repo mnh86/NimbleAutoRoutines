@@ -8,13 +8,15 @@
 
 uint8_t runMode = RUN_MODE_IDLE;
 unsigned long int runModeStartTime;
+int maxPositionDelta = 0; // largest jumps in position (for debugging)
+bool easeInToChange = true;
 
 unsigned long int airReleaseTimer;
-#define AIR_RELEASE_TIMEOUT  120000 // 2 min
+#define AIR_RELEASE_TIMEOUT  300000 // 5 min
 #define AIR_RELEASE_DURATION 1500   // 1.5 sec
 
 unsigned long int randChangeTimer;
-#define RAND_MODE_TIMEOUT 240000  // 4 min
+#define RAND_MODE_TIMEOUT 120000  // 2 min
 float randVibRampFreq = 80.f;     // 60-120
 float randStrokeModFreq = 10.f;   //  5-15
 float randStrokeModAmp = -8.f;    //  6-10
@@ -28,10 +30,10 @@ double randomDouble(double minf, double maxf)
 void setRandRunModeValues()
 {
     randChangeTimer = millis() + RAND_MODE_TIMEOUT;
-    randVibRampFreq = randomDouble(60.f, 120.f);
+    randVibRampFreq = randomDouble(20.f, 120.f);
     randStrokeModFreq = randomDouble(5.f, 20.f);
     randStrokeModAmp = randomDouble(6.f, 10.f);
-    randStrokeDepthFreq = randomDouble(30.f, 50.f);
+    randStrokeDepthFreq = randomDouble(30.f, 120.f);
 }
 
 char * getRunModeName()
@@ -47,8 +49,14 @@ void setRunMode(byte rm)
 {
     if (rm > RUN_MODE_RANDOM) rm = RUN_MODE_CONSTANT;
     runModeStartTime = millis();
-    airReleaseTimer = runModeStartTime + AIR_RELEASE_TIMEOUT;
+    if (rm != RUN_MODE_IDLE && runMode == RUN_MODE_IDLE) {
+        // only reset air release timer when transitioning from IDLE
+        actuator.airOut = false;
+        airReleaseTimer = runModeStartTime + AIR_RELEASE_TIMEOUT;
+    }
     runMode = rm;
+    maxPositionDelta = 0;
+    easeInToChange = true;
     if (rm == RUN_MODE_RANDOM) setRandRunModeValues();
 }
 
@@ -104,21 +112,22 @@ void initNimbleStrokerController()
     lastEncoderPos = encoder.getCount();
 }
 
+int16_t easePositionToTarget(int16_t from, int16_t to = 0) {
+    if ((to + (idleReturnSpeed * -1)) <= from && from <= (to + idleReturnSpeed)) {
+        return to;
+    } else if (to < from) {
+        return from - idleReturnSpeed;
+    } else { // (from < to)
+        return from + idleReturnSpeed;
+    }
+}
+
 void runModeIdleStep()
 {
     // gradually return the position to zero
-    if (framePosition > 0)
-    {
-        framePosition = framePosition - idleReturnSpeed;
-    }
-    else if (framePosition < 0)
-    {
-        framePosition = framePosition + idleReturnSpeed;
-    }
-    else if (((idleReturnSpeed * -1) < framePosition && framePosition < 0) ||
-             (0 < framePosition && framePosition < idleReturnSpeed))
-    {
-        framePosition = 0;
+    framePosition = easePositionToTarget(framePosition);
+    if (framePosition == 0) {
+        maxPositionDelta = 0;
         frameForce = IDLE_FORCE;
     }
 }
@@ -198,17 +207,20 @@ void runModeRandomStep(unsigned long t)
     float strokeDepthWave = calcSinWavePosition(t, nsSpeed/randStrokeDepthFreq, nsStroke - nsTexture);
     framePosition = (strokeDepthWave * strokeModulationWave(t, randStrokeModFreq, randStrokeModAmp)) + vibrationRampWave(t, randVibRampFreq);
     frameForce = MAX_FORCE;
-    if (framePosition == 0 && millis() > randChangeTimer) {
-        // Re-randomize whenever timer is ready and wave is at midpoint (to ease transition somewhat)
-        setRandRunModeValues();
+
+    // Re-randomize whenever timer is ready
+    // and when position is near midpoint (to ease transition somewhat)
+    if (framePosition >= -5 && framePosition <= 5 && millis() > randChangeTimer) {
+        setRunMode(RUN_MODE_RANDOM);
     }
 }
 
 void runModeStep()
 {
     unsigned long t = millis() - runModeStartTime;
-    // TODO: Need to safely transition back to idle before switching to new run mode
-    //       to avoid large jumping differences in position.
+    // TODO: Consider a better implementation to transition back to idle
+    //       before switching to a new run mode to avoid
+    //       large jumping differences in position.
     switch (runMode)
     {
         case RUN_MODE_CONSTANT: runModeConstantStep(t); break;
@@ -262,8 +274,14 @@ void setTextureDelta(int8_t delta)
 
 void setSpeedDelta(int8_t delta)
 {
+    float prevSpeed = nsSpeed;
     int16_t tmpVal = mapEditValues((int)(nsSpeed * 100), NS_SPEED_MIN, NS_SPEED_MAX, delta);
     nsSpeed = (tmpVal > 0) ? tmpVal / 100.0 : 0;
+
+    if (runMode != RUN_MODE_IDLE && nsSpeed != prevSpeed) {
+        easeInToChange = true; // speed changes cause big jumps in position
+        runModeStartTime = millis(); // reset start time to reset wave calculations
+    }
 }
 
 #define EDIT_DELTA_AMT 2
@@ -275,7 +293,7 @@ void editModeStep()
     lastEncoderPos = tmpRef;
 
     if (delta == 0) return;
-
+    maxPositionDelta = 0;
     switch (editMode)
     {
         case EDIT_MODE_SPEED: setSpeedDelta(delta); break;
@@ -284,15 +302,26 @@ void editModeStep()
     }
 }
 
-#define MAX_POSITION_DELTA 400
-
-int16_t clampPositionDelta(int16_t fromPos, int16_t toPos)
+#define MAX_POSITION_DELTA 50
+/**
+ * Basic protection against large position changes
+ */
+int16_t clampPositionDelta()
 {
-    int16_t delta = toPos - fromPos;
-    if (delta >= 0)
-        return (delta > MAX_POSITION_DELTA) ? fromPos + MAX_POSITION_DELTA : toPos;
-    else
-        return (delta < -MAX_POSITION_DELTA) ? fromPos - MAX_POSITION_DELTA : toPos;
+    if (easeInToChange) {
+        int16_t easePos = easePositionToTarget(lastFramePos, framePosition);
+        if (easePos == framePosition) {
+            easeInToChange = false;
+        }
+        return easePos;
+    } else {
+        int16_t delta = framePosition - lastFramePos;
+        maxPositionDelta = max(abs(delta), maxPositionDelta);
+        if (delta >= 0)
+            return (delta > MAX_POSITION_DELTA) ? lastFramePos + MAX_POSITION_DELTA : framePosition;
+        else
+            return (delta < -MAX_POSITION_DELTA) ? lastFramePos - MAX_POSITION_DELTA : framePosition;
+    }
 }
 
 void nsControllerLoop()
@@ -316,7 +345,7 @@ void nsControllerLoop()
     // Send packet of values to the actuator when time is ready
     if (checkTimer())
     {
-        lastFramePos = clampPositionDelta(lastFramePos, framePosition);
+        lastFramePos = clampPositionDelta();
         actuator.positionCommand = lastFramePos;
         actuator.forceCommand = frameForce;
         sendToAct();
