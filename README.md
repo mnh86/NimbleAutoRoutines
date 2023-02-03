@@ -28,3 +28,4 @@ Basic automated routines for the NimbleConModule and NimbleStroker.
 
 - Used example code (heavily modified) from: <https://github.com/tyrm/nimblestroker/>
 - Used and modified NimbleConSDK from: <https://github.com/ExploratoryDevices/NimbleConModule>
+- See also [platformio.ini](./platformio.ini) for other 3rd party OSS libraries used in this project
