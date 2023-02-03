@@ -5,3 +5,4 @@
 .vscode/settings.json
 .vscode/ipch
 src/tests.js
+NOTES.md
