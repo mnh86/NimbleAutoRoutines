@@ -194,7 +194,7 @@ void ledLevelDisplay(byte LEDScale)
     LEDScale > 224 ? ledcWrite(ENC_LED_NW, map(LEDScale, 224, 255, 0, LED_MAX_DUTY)) : ledcWrite(ENC_LED_NW, 0);
 }
 
-void ledPositionPulse(int position, bool isOn)
+void ledPositionPulse(short int position, bool isOn)
 {
     byte ledScale = map(abs(position), 1, ACTUATOR_MAX_POS, 1, LED_MAX_DUTY);
     byte ledState1 = 0;
@@ -212,14 +212,16 @@ void ledPositionPulse(int position, bool isOn)
         }
     }
 
-    ledcWrite(ENC_LED_N, ledState1);
+    ledcWrite(ENC_LED_N,  ledState1);
+    ledcWrite(ENC_LED_SE, ledState1);
+    ledcWrite(ENC_LED_SW, ledState1);
+
     ledcWrite(ENC_LED_NE, ledState2);
-    ledcWrite(ENC_LED_E, ledState1);
-    ledcWrite(ENC_LED_SE, ledState2);
-    ledcWrite(ENC_LED_S, ledState1);
-    ledcWrite(ENC_LED_SW, ledState2);
-    ledcWrite(ENC_LED_W, ledState1);
     ledcWrite(ENC_LED_NW, ledState2);
+    ledcWrite(ENC_LED_S,  ledState2);
+
+    ledcWrite(ENC_LED_W, 0);
+    ledcWrite(ENC_LED_E, 0);
 }
 
 void sendToAct()

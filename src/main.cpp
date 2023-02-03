@@ -15,10 +15,12 @@ void printState() {
     bufferedOut.printf("------------------\n");
     if (runMode != RUN_MODE_IDLE) {
     bufferedOut.printf(" Run Mode: %s\n", getRunModeName());
-    bufferedOut.printf("      Pos: %5d\n", framePosition);
+    bufferedOut.printf("      Pos: %5d\n", lastFramePos);
+    bufferedOut.printf("    Force: %5d\n", frameForce);
+    bufferedOut.printf("   AirOut: %5d\n", actuator.airOut);
     }
     bufferedOut.printf("Edit Mode: %s\n", getEditModeName());
-    bufferedOut.printf("    Speed: %5f\n", nsSpeed);
+    bufferedOut.printf("    Speed: %0.3f\n", nsSpeed);
     bufferedOut.printf("   Stroke: %5d\n", nsStroke);
     bufferedOut.printf("  Texture: %5d\n", nsTexture);
     //bufferedOut.printf("Encoder %5d\n", encoder.getCount());
@@ -31,15 +33,15 @@ void pressHandler(BfButton *btn, BfButton::press_pattern_t pattern)
     switch (pattern)
     {
     case BfButton::SINGLE_PRESS: // Cycle through edit modes
-        editMode++; if (editMode > EDIT_MODE_TEXTURE) editMode = EDIT_MODE_SPEED;
+        setEditMode(editMode + 1);
         bufferedOut.printf("Btn %d pressed\n", btn->getID());
         break;
     case BfButton::DOUBLE_PRESS: // Start and switch run modes
-        runMode++; if (runMode > RUN_MODE_RANDOM) runMode = RUN_MODE_CONSTANT;
+        setRunMode(runMode + 1);
         bufferedOut.printf("Btn %d double pressed\n", btn->getID());
         break;
     case BfButton::LONG_PRESS: // Stop
-        runMode = RUN_MODE_IDLE;
+        setRunMode(RUN_MODE_IDLE);
         bufferedOut.printf("Btn %d long pressed\n", btn->getID());
         break;
     }
@@ -80,7 +82,7 @@ void driveLEDs()
         return;
     ledCycleDelay.repeat(); // start delay again without drift
 
-    ledPositionPulse(framePosition, (runMode != RUN_MODE_IDLE));
+    ledPositionPulse(lastFramePos, (runMode != RUN_MODE_IDLE));
     ledEditModeDisplay(true);
 }
 
@@ -96,5 +98,5 @@ void loop()
     btn.read();
     nsControllerLoop();
     driveLEDs();
-    logState();
+    //logState();
 }
