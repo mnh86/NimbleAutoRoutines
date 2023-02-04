@@ -1,4 +1,5 @@
 #include <Arduino.h>
+// From https://github.com/ExploratoryDevices/NimbleConModule (with edits)
 #include <ESP32Encoder.h>   // https://github.com/madhephaestus/ESP32Encoder
 #include <HardwareSerial.h> // Arduino Core ESP32 Hardware serial library
 
