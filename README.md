@@ -33,8 +33,7 @@ Three run modes are included:
 ## Other Info
 
 - During a running routine, air will automatically be let out every 5 mins for a duration of 1.5 seconds to help reduce air buildup in the tube assembly.
-- If a temperature fault is detected during a running routine, it will stop and switch to IDLE mode.
-- Some protections have been made to reduce wild swings in position when changing speed or cycling through routines, but it is possible not all scenarios have been caught yet. Take care with the settings to your speed, stroke and texture settings. Too high and it can trip a temperature fault, especially on Random mode.
+- Some protections have been made to reduce wild swings in position when changing speed or cycling through routines, but may need additional tuning.
 
 ## Attributions
 
