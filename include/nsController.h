@@ -353,9 +353,9 @@ void nsControllerLoop()
 
     if (readFromAct()) // Read current state from actuator.
     { // If the function returns true, the values were updated.
-        if (actuator.tempLimiting) {
-            setRunMode(RUN_MODE_IDLE);
-        }
+        // if (actuator.tempLimiting) {
+        //     setRunMode(RUN_MODE_IDLE);
+        // }
     }
 
     pendant.present ? ledcWrite(PEND_LED, 50) : ledcWrite(PEND_LED, 0); // Display pendant connection status on LED.
