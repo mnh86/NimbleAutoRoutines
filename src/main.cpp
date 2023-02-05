@@ -19,7 +19,7 @@ void printState() {
     bufferedOut.printf("  MaxPosΔ: %5d\n", maxPositionDelta);
     bufferedOut.printf("    Force: %5d\n", frameForce);
     bufferedOut.printf("   AirOut: %5d\n", actuator.airOut);
-    bufferedOut.printf("TempLimit: %s", actuator.tempLimiting ? "true" : "false");
+    bufferedOut.printf("TempLimit: %s\n", actuator.tempLimiting ? "true" : "false");
     maxPositionDelta = 0;
     }
     bufferedOut.printf("Edit Mode: %s\n", getEditModeName());
