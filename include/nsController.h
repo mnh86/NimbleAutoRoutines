@@ -99,7 +99,7 @@ const int idleReturnSpeed = 3;
 uint16_t nsStroke = 100; // maximum magnitude of stroke (primary wave magnitude will be nsStroke - nsTexture) [0-1000]
 float nsSpeed = 0.1;     // speed in hz of the primary wave
 uint16_t nsTexture = 0;  // magnitude of the secondary wave [0-1000] (vibration intensity)
-float nsNature = 10;     // speed in hz of the secondary wave (vibration speed)
+float nsNature = 20;     // speed in hz of the secondary wave (vibration speed)
 
 int16_t framePosition = 0; // -1000 to 1000
 int16_t lastFramePos = 0;  // -1000 to 1000
@@ -152,7 +152,7 @@ void runModeConstantStep(unsigned long t)
 {
     float strokeWavePos = calcSinWavePosition(t, nsSpeed, nsStroke - nsTexture);
     float vibrationWavePos = calcSinWavePosition(t, nsNature, nsTexture);
-    framePosition = strokeWavePos + vibrationWavePos;
+    framePosition = round(strokeWavePos + vibrationWavePos);
     frameForce = MAX_FORCE;
 }
 
@@ -262,7 +262,7 @@ void setStrokeDelta(int8_t delta)
 }
 
 #define NS_TEXTURE_MIN 0
-#define NS_TEXTURE_MAX 50
+#define NS_TEXTURE_MAX 25
 
 void setTextureDelta(int8_t delta)
 {
@@ -284,7 +284,7 @@ void setSpeedDelta(int8_t delta)
     }
 }
 
-#define EDIT_DELTA_AMT 2
+#define EDIT_DELTA_AMT 4
 
 void editModeStep()
 {
